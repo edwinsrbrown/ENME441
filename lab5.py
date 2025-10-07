@@ -24,12 +24,13 @@ try:
 			dc = (math.sin(2*math.pi*f*t-phi)**2)*100
 			pwm.ChangeDutyCycle(dc)
 			phi = phi + math.pi/11
-			delay(0.5)
+	
 except KeyboardInterrupt:
 	print('\nExiting') 
 
 pwm.stop()
 GPIO.cleanup()
+
 
 
 
