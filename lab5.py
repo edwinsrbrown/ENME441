@@ -7,6 +7,7 @@ GPIO.setmode(GPIO.BCM)
 f = 0.2
 f_pwm = 500
 GPIO_pins = list(range(2,12))
+led_pwm[]
 
 for ledPin in GPIO_pins:
 	GPIO.setup(ledPin, GPIO.OUT) #set each GPIO pin as output
@@ -29,3 +30,4 @@ except KeyboardInterrupt:
 
 pwm.stop()
 GPIO.cleanup()
+
