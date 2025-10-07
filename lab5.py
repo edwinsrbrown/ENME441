@@ -20,7 +20,7 @@ try:
 	while 1:
 		t = time.time() #finds current time in seconds
 		phi = 0
-		for pwm in enumerate(led_pwm):
+		for pwm in led_pwm:
 			dc = (math.sin(2*math.pi*f*t-phi)**2)*100
 			pwm.ChangeDutyCycle(dc)
 			phi = phi + math.pi/11
@@ -29,6 +29,7 @@ except KeyboardInterrupt:
 
 pwm.stop()
 GPIO.cleanup()
+
 
 
 
