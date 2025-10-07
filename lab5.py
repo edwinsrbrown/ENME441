@@ -4,10 +4,18 @@ import math
 
 GPIO.setmode(GPIO.BCM)
 
+rev = 14
+GPIO.setup(rev, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+
+def reverse(pin)
+	print("Rising edge detected on pin 14, reversing direction")
+
+GPIO.add_event_detect(rev, GPIO.RISING, callback=reverse, bouncetime=100)
+
 f = 0.2
 f_pwm = 500
 GPIO_pins = list(range(2,12)) # list of all the GPIO pins
-led_pwm = [] # list to hold al of the PWMs
+led_pwm = [] # list to hold all of the PWMs
 
 for ledPin in GPIO_pins:
 	GPIO.setup(ledPin, GPIO.OUT) # set each GPIO pin as output
@@ -24,14 +32,8 @@ try:
 			dc = (math.sin(2*math.pi*f*t-phi)**2)*100
 			pwm.ChangeDutyCycle(dc)
 			phi = phi + math.pi/11
-	
 except KeyboardInterrupt:
 	print('\nExiting') 
 
 pwm.stop()
 GPIO.cleanup()
-
-
-
-
-
