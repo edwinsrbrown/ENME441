@@ -10,8 +10,8 @@ GPIO.setup(rev, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
 def reverse(pin):
 	print("Rising edge detected on pin 14, reversing direction")
+	global direction
 	direction = -1 * direction
-	return direction
 
 GPIO.add_event_detect(rev, GPIO.RISING, callback=reverse, bouncetime=100)
 
@@ -40,6 +40,7 @@ except KeyboardInterrupt:
 
 pwm.stop()
 GPIO.cleanup()
+
 
 
 
