@@ -15,7 +15,7 @@ GPIO.setup(s2, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 GPIO.setup(s3, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 
 class Bug:
-    def __init__(self, shifter, timestep, x, isWrapOn):
+    def __init__(self, shifter, init_timestep, x, isWrapOn):
         self.__shifter = shifter
         self.timestep = timestep
         self.x = x
@@ -70,6 +70,7 @@ try:
         else:
             bug.timestep = init_timestep
 
+        pos = random.randint(0, self.max)
         time.sleep(bug.timestep)
 
 except:
