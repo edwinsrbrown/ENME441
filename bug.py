@@ -7,7 +7,7 @@ GPIO.setmode(GPIO.BCM)
 
 serialPin, latchPin, clockPin = 23, 24, 25
 timestep, x, isWrapOn = 0.1, 3, False
-s1, s2, s3 = 5, 6, 13
+s1, s2, s3 = 17, 27, 22
 
 speedChange = timestep/3
 
