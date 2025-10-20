@@ -67,7 +67,7 @@ try:
         else:
             bug.isWrapOn = False
 
-        if s3Switch == GPIO.HIGH
+        if s3Switch == GPIO.HIGH:
             timestep = speedChange
         else:
             timestep = timestep
