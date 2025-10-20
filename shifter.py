@@ -32,6 +32,6 @@ shifter = Shifter(serialPin, latchPin, clockPin)
 
 try:
   while 1: 
-    shifter.shiftByte(0b10101010)
+    shifter.shiftByte(0b01000000)
 except:
   GPIO.cleanup()
