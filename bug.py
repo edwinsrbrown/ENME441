@@ -37,7 +37,7 @@ class Bug:
             else:
                 self.x = newX
         else:
-            if self.min <= newX <= self.max
+            if self.min <= newX <= self.max:
                 self.x = newX
 
     def start(self):
