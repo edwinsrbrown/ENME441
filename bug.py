@@ -69,7 +69,7 @@ try:
             bug.timestep = init_timestep/3
         else:
             bug.timestep = init_timestep
-.
+
         time.sleep(bug.timestep)
 
 except:
