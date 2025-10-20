@@ -15,20 +15,22 @@ class Shifter:
     GPIO.setup(latchPin, GPIO.OUT, initial=0)  # start latch & clock low
     GPIO.setup(clockPin, GPIO.OUT, initial=0)  
 
-  def shiftByte(shift, j):
-    for i in range(8):
-      GPIO.output(self.serialPin, j & (1<<i))
-      GPIO.output(clockPin,1)       # ping the clock pin to shift register data
-      time.sleep(0)
-      GPIO.output(clockPin,0)
+  
 
-  def ping(shift, k):
+  def _ping(self, k):
     GPIO.output(k, 1)        # ping the latch pin to send register to output
     time.sleep(0)
     GPIO.output(k, 0)
 
+  def shiftByte(self, j):
+    for i in range(8):
+      GPIO.output(self.serialPin, j & (1<<i))
+      self._ping(self.clockPin)
+    self._ping(self.latchPin)
+
+  shifter = Shifter(serialPin, latchPin, clockPin)
 
   try:
-    while 1: pass
+    while 1: shifter.shiftByte(0b01010101)
   except:
     GPIO.cleanup()
