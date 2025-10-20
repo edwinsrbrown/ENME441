@@ -1,0 +1,34 @@
+import RPi.GPIO as GPIO
+import time
+
+GPIO.setmode(GPIO.BCM)
+
+serialPin, latchPin, clockPin = 23, 24, 25
+
+class Shifter:
+  def __init__(shift, serialPin, latchPin, clockPin):
+    shift.serialPin = serialPin
+    shift.latchPin = latchPin
+    shift.clockPin = clockPin
+
+    GPIO.setup(serialPin, GPIO.OUT)
+    GPIO.setup(latchPin, GPIO.OUT, initial=0)  # start latch & clock low
+    GPIO.setup(clockPin, GPIO.OUT, initial=0)  
+
+  def shiftByte(shift, j):
+    for i in range(8):
+      GPIO.output(shift.serialPin, j & (1<<i))
+      GPIO.output(clockPin,1)       # ping the clock pin to shift register data
+      time.sleep(0)
+      GPIO.output(clockPin,0)
+
+  def ping(shift, k):
+    GPIO.output(k, 1)        # ping the latch pin to send register to output
+    time.sleep(0)
+    GPIO.output(k, 0)
+
+
+  try:
+    while 1: pass
+  except:
+    GPIO.cleanup()
