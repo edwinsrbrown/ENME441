@@ -6,10 +6,8 @@ from shifter import Shifter
 GPIO.setmode(GPIO.BCM)
 
 serialPin, latchPin, clockPin = 23, 24, 25
-timestep, x, isWrapOn = 0.1, 3, False
+init_timestep, x, isWrapOn = 0.1, 3, False
 s1, s2, s3 = 17, 27, 22
-
-speedChange = timestep/3
 
 #set as pulldown resistors to simulate on/off switches
 GPIO.setup(s1, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
@@ -18,7 +16,7 @@ GPIO.setup(s3, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 
 class Bug:
     def __init__(self, shifter, timestep, x, isWrapOn):
-        self.shifter = shifter
+        self.__shifter = shifter
         self.timestep = timestep
         self.x = x
         self.isWrapOn = isWrapOn
@@ -32,7 +30,7 @@ class Bug:
         if self.isWrapOn == True:
             if newX > self.max:
                 self.x = self.min
-            elif newX < self.max:
+            elif newX < self.min:
                 self.x = self.max
             else:
                 self.x = newX
@@ -49,7 +47,7 @@ class Bug:
         self.__shifter.shiftByte(0b00000000)
 
 shifter = Shifter(serialPin, latchPin, clockPin)
-bug = Bug(shifter, timestep, x, isWrapOn)
+bug = Bug(shifter, init_timestep, x, isWrapOn)
 
 try:
     while True:
@@ -68,11 +66,11 @@ try:
             bug.isWrapOn = False
 
         if s3Switch == GPIO.HIGH:
-            timestep = speedChange
+            bug.timestep = init_timestep/3
         else:
-            timestep = timestep
-
-        time.sleep(timestep)
+            bug.timestep = init_timestep
+.
+        time.sleep(bug.timestep)
 
 except:
     bug.stop()
