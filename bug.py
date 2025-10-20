@@ -43,10 +43,10 @@ class Bug:
     def start(self):
         self.move()
         bit = 1 << self.x
-        self._shifter.shiftByte(bit)
+        self.__shifter.shiftByte(bit)
 
     def stop(self):
-        self._shifter.shiftByte(0b00000000)
+        self.__shifter.shiftByte(0b00000000)
 
 shifter = Shifter(serialPin, latchPin, clockPin)
 bug = Bug(shifter, timestep, x, isWrapOn)
