@@ -15,8 +15,6 @@ class Shifter:
     GPIO.setup(latchPin, GPIO.OUT, initial=0)  # start latch & clock low
     GPIO.setup(clockPin, GPIO.OUT, initial=0)  
 
-  
-
   def _ping(self, k):
     GPIO.output(k, 1)        # ping the latch pin to send register to output
     time.sleep(0)
@@ -31,6 +29,8 @@ class Shifter:
   shifter = Shifter(serialPin, latchPin, clockPin)
 
   try:
-    while 1: shifter.shiftByte(0b01010101)
+    while 1: 
+      shifter.shiftByte(0b11110000)
+  
   except:
     GPIO.cleanup()
