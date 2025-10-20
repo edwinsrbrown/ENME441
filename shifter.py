@@ -30,8 +30,3 @@ class Shifter:
 
 shifter = Shifter(serialPin, latchPin, clockPin)
 
-try:
-  while 1: 
-    shifter.shiftByte(0b01000000)
-except:
-  GPIO.cleanup()
