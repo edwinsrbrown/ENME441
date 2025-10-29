@@ -71,20 +71,20 @@ def html_page():
 <body>
   <div class="led-control">
     <label>LED1</label>
-    <input type="range" id="led1" min="0" max="100" value="{led_values['1']}" oninput="updateLED(1, this.value)">
-    <span id="val1">{led_values['1']}</span>
+    <input type="range" id="led1" min="0" max="100" value="{led_init['1']}" oninput="updateLED(1, this.value)">
+    <span id="val1">{led_init['1']}</span>
   </div>
 
   <div class="led-control">
     <label>LED2</label>
-    <input type="range" id="led2" min="0" max="100" value="{led_values['2']}" oninput="updateLED(2, this.value)">
-    <span id="val2">{led_values['2']}</span>
+    <input type="range" id="led2" min="0" max="100" value="{led_init['2']}" oninput="updateLED(2, this.value)">
+    <span id="val2">{led_init['2']}</span>
   </div>
 
   <div class="led-control">
     <label>LED3</label>
-    <input type="range" id="led3" min="0" max="100" value="{led_values['3']}" oninput="updateLED(3, this.value)">
-    <span id="val3">{led_values['3']}</span>
+    <input type="range" id="led3" min="0" max="100" value="{led_init['3']}" oninput="updateLED(3, this.value)">
+    <span id="val3">{led_init['3']}</span>
   </div>
 
   <script>
@@ -107,7 +107,7 @@ def html_page():
 # REQUEST HANDLER
 # =======================
 def handle_request(request):
-    global led_values
+    global led_init
 
     if request.startswith("POST"):
         try:
