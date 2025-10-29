@@ -4,7 +4,7 @@ import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM)
 
 #LED Pin numbers and GPIO pins
-led_pins = {'1': 2, '2': 3, '3': 4}
+led_pins = {'1': 14, '2': 15, '3': 18}
 #Set initial pwm brightness to 0
 led_values = {'1': 0, '2': 0, '3': 0}
 
