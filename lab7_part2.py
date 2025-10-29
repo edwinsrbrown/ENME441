@@ -100,7 +100,7 @@ def run(host="", port=8080): #port 8080 -> non privilaged alternative to 80
     s.bind((host, port)) #host IP address through the given PORT
     s.listen(1) # Listen for up to 1 queued connections
     #Print my Pi's IP address and link to control LEDs
-    print("Visit http://172.20.10.8:8080 in your browser.")
+    print("Visit http://172.20.10.2:8080 in your browser.")
 
     while True:
         conn, addr = s.accept() # Accept connection
