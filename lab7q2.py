@@ -59,25 +59,26 @@ def html_page():
 <body>
   <div class="led-control">
     <label>LED1</label>
-    <input type="range" id="led1" min="0" max="100" value="{led_init['1']}" oninput="updateLED(1, this.value)">
-    <span id="val1">{led_init['1']}</span>
+    <input type="range" id="led1" min="0" max="100" value="{led_values['1']}" oninput="updateLED(1, this.value)">
+    <span id="val1">{led_values['1']}</span>
   </div>
 
   <div class="led-control">
     <label>LED2</label>
-    <input type="range" id="led2" min="0" max="100" value="{led_init['2']}" oninput="updateLED(2, this.value)">
-    <span id="val2">{led_init['2']}</span>
+    <input type="range" id="led2" min="0" max="100" value="{led_values['2']}" oninput="updateLED(2, this.value)">
+    <span id="val2">{led_values['2']}</span>
   </div>
 
   <div class="led-control">
     <label>LED3</label>
-    <input type="range" id="led3" min="0" max="100" value="{led_init['3']}" oninput="updateLED(3, this.value)">
-    <span id="val3">{led_init['3']}</span>
+    <input type="range" id="led3" min="0" max="100" value="{led_values['3']}" oninput="updateLED(3, this.value)">
+    <span id="val3">{led_values['3']}</span>
   </div>
 
   <script>
     function updateLED(led, brightness) {{
       document.getElementById('val' + led).textContent = brightness;
+
       fetch('/', {{
         method: 'POST',
         headers: {{
@@ -85,23 +86,28 @@ def html_page():
         }},
         body: 'led=' + led + '&brightness=' + brightness
       }});
-    
+    }}
   </script>
 </body>
 </html>"""
 
-def brightness_change(request):
-    global led_init
+
+# =======================
+# REQUEST HANDLER
+# =======================
+def handle_request(request):
+    global led_values
 
     if request.startswith("POST"):
         try:
-            data = parsePOSTdata(request)  
+            body = request.split("\r\n\r\n", 1)[1]
+            data = parse_qs(body)
             if 'led' in data and 'brightness' in data:
-                led = data['led']
-                brightness = int(data['brightness'])
-                led_init[led] = brightness
-                pwm_values[led].ChangeDutyCycle(brightness)
-                # print(f"LED {led} set to {brightness}%")
+                led = data['led'][0]
+                brightness = int(data['brightness'][0])
+                led_values[led] = brightness
+                pwm_channels[led].ChangeDutyCycle(brightness)
+                print(f"LED {led} set to {brightness}%")
         except Exception as e:
             print("POST error:", e)
 
