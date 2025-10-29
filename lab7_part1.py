@@ -62,14 +62,14 @@ def html():
     <input type="range" id="brightness" name="brightness" min="0" max="100" value="0">
 
     <label style="margin-top:10px;">Select LED:</label>
-    <input type="radio" id="led1" name="led" value="0" required>
-    <label for="led1">LED 1 ({led_init[0]}%)</label><br>
+    <input type="radio" id="led1" name="led" value="1" required>
+    <label for="led1">LED 1 ({led_init['1']}%)</label><br>
 
-    <input type="radio" id="led2" name="led" value="1">
-    <label for="led2">LED 2 ({led_init[1]}%)</label><br>
+    <input type="radio" id="led2" name="led" value="2">
+    <label for="led2">LED 2 ({led_init['2']}%)</label><br>
 
-    <input type="radio" id="led3" name="led" value="2">
-    <label for="led3">LED 3 ({led_init[2]}%)</label><br>
+    <input type="radio" id="led3" name="led" value="3">
+    <label for="led3">LED 3 ({led_init['3']}%)</label><br>
 
     <input type="submit" value="Change Brightness">
   </form>
