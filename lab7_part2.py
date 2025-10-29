@@ -100,12 +100,14 @@ PORT = 8080
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((HOST, PORT))
 s.listen(1)
-print(f"Type http://<IP Address>:8080/")
+
+print("Type http://<IP Address>:8080/")
 
 try:
     while True:
         conn, addr = s.accept()
         request = conn.recv(1024).decode('utf-8')
+        
         if not request:
             continue
 
@@ -125,7 +127,7 @@ try:
                 print("POST err:", e)
 
         # prepare and send HTTP response
-        response = html_page()
+        response = html_java()
         conn.sendall(response.encode('utf-8'))
         conn.close()
             
