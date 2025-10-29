@@ -32,48 +32,47 @@ def parsePOSTdata(data):
 
 # generates the HTML/Java web interface
 def html():
-    return f"""<!DOCTYPE html>
+   return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>LED Brightness Control</title>
 <style>
-    body {{
-        border: 3px solid black;
-        width: 230px;
-        padding: 10px;
-        font-family: Arial, sans-serif;
-    }}
-    label {{
-        display: block;
-        margin-top: 8px;
-    }}
-    input[type="range"] {{
-        width: 100%;
-    }}
-    input[type="submit"] {{
-        margin-top: 10px;
-        width: 100%;
-    }}
+  body {{
+    font-family: Arial, sans-serif;
+    border: 3px solid black;
+    width: 250px;
+    padding: 15px;
+  }}
+  label {{
+    display: block;
+    margin-top: 10px;
+  }}
+  input[type="range"] {{
+    width: 100%;
+  }}
+  input[type="submit"] {{
+    margin-top: 15px;
+  }}
 </style>
 </head>
 <body>
-    <form method="POST">
-        <label for="brightness">Brightness level:</label>
-        <input type="range" id="brightness" name="brightness" min="0" max="100" value="0">
+  <form method="POST">
+    <label for="brightness">Brightness level:</label>
+    <input type="range" id="brightness" name="brightness" min="0" max="100" value="0">
 
-        <label style="margin-top: 10px;">Select LED:</label>
-        <input type="radio" id="led1" name="led" value="1" checked>
-        <label for="led1">LED 1 ({led_values['1']}%)</label><br>
+    <label style="margin-top:10px;">Select LED:</label>
+    <input type="radio" id="led1" name="led" value="0" required>
+    <label for="led1">LED 1 ({led_init[0]}%)</label><br>
 
-        <input type="radio" id="led2" name="led" value="2">
-        <label for="led2">LED 2 ({led_values['2']}%)</label><br>
+    <input type="radio" id="led2" name="led" value="1">
+    <label for="led2">LED 2 ({led_init[1]}%)</label><br>
 
-        <input type="radio" id="led3" name="led" value="3">
-        <label for="led3">LED 3 ({led_values['3']}%)</label><br>
+    <input type="radio" id="led3" name="led" value="2">
+    <label for="led3">LED 3 ({led_init[2]}%)</label><br>
 
-        <input type="submit" value="Change Brightness">
-    </form>
+    <input type="submit" value="Change Brightness">
+  </form>
 </body>
 </html>"""
 
