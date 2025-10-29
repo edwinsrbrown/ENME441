@@ -6,17 +6,17 @@ import RPi.GPIO as GPIO
 # =======================
 GPIO.setmode(GPIO.BCM)
 
-LED_PINS = {'1': 17, '2': 27, '3': 22}
-PWM_FREQUENCY = 1000  # Hz
+led_pins = {'1': 17, '2': 27, '3': 22}
+pwm_freq = 1000  # Hz
 
 pwm_channels = {}
-for led, pin in LED_PINS.items():
+for led, pin in led_pins.items():
     GPIO.setup(pin, GPIO.OUT)
-    pwm = GPIO.PWM(pin, PWM_FREQUENCY)
+    pwm = GPIO.PWM(pin, pwm_freq)
     pwm.start(0)
     pwm_channels[led] = pwm
 
-led_values = {'1': 0, '2': 0, '3': 0}
+led_init = {'1': 0, '2': 0, '3': 0}
 
 
 # =======================
@@ -115,7 +115,7 @@ def handle_request(request):
             if 'led' in data and 'brightness' in data:
                 led = data['led']
                 brightness = int(data['brightness'])
-                led_values[led] = brightness
+                led_init[led] = brightness
                 pwm_channels[led].ChangeDutyCycle(brightness)
                 print(f"LED {led} set to {brightness}%")
         except Exception as e:
