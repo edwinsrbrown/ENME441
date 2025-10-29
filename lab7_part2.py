@@ -129,8 +129,14 @@ def run(host="", port=8080): #port 8080 -> non privilaged alternative to 80
                 conn.sendall(b"HTTP/1.1 204 No Content\r\n\r\n")
 
             else:  # send updated HTML page
-                response = html_page()
-                conn.sendall(response.encode("utf-8"))
+                body - html_page()
+                headers = (
+                    "HTTP/1.1 200 OK\r\n"
+                    "Content-Type: text/html\r\n"
+                    f"Content-Length: {len(body)}\r\n"
+                    "Connection: close\r\n"
+                    "\r\n"
+                )
 
 
 if __name__ == "__main__":
