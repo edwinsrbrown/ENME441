@@ -95,7 +95,7 @@ def html_page():
 # =======================
 # REQUEST HANDLER
 # =======================
-def handle_request(request):
+def brightness_change(request):
     global led_init
 
     if request.startswith("POST"):
