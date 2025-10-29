@@ -105,7 +105,7 @@ def brightness_change(request):
                 led = data['led'][0]
                 brightness = int(data['brightness'][0])
                 led_init[led] = brightness
-                pwm_channels[led].ChangeDutyCycle(brightness)
+                pwm_values[led].ChangeDutyCycle(brightness)
                 print(f"LED {led} set to {brightness}%")
         except Exception as e:
             print("POST error:", e)
