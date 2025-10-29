@@ -98,7 +98,7 @@ def handle_request(request):
     if request.startswith("POST"):
         try:
             # takes the data and assigns it to variable 'data' then updates the brightness value in 'led_init' 
-            data = parsePOSTdata(request)  # <-- use custom parser instead of parse_qs
+            data = parsePOSTdata(request)  
             if 'led' in data and 'brightness' in data:
                 led = data['led']
                 brightness = int(data['brightness'])
@@ -120,7 +120,6 @@ def handle_request(request):
 
 def run_server(host='', port=8080):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        # s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((host, port))
         s.listen(1)
         print(f"Type http://IP Address:{port}/")
