@@ -100,7 +100,7 @@ PORT = 8080
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((HOST, PORT))
 s.listen(1)
-print(f"Type http://<IP Address>:{port}/")
+print(f"Type http://<IP Address>:8080/")
 
 try:
     while True:
