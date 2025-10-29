@@ -6,17 +6,17 @@ import RPi.GPIO as GPIO
 # =======================
 GPIO.setmode(GPIO.BCM)
 
-LED_PINS = {'1': 14, '2': 15, '3': 18}
-PWM_FREQUENCY = 1000  # Hz
+led_pins = {'1': 14, '2': 15, '3': 18}
+freq = 1000  # Hz
 
-pwm_channels = {}
-for led, pin in LED_PINS.items():
+pwm_pins = {}
+for led, pin in led_pins.items():
     GPIO.setup(pin, GPIO.OUT)
-    pwm = GPIO.PWM(pin, PWM_FREQUENCY)
+    pwm = GPIO.PWM(pin, freq)
     pwm.start(0)
-    pwm_channels[led] = pwm
+    pwm_pins[led] = pwm
 
-led_values = {'1': 0, '2': 0, '3': 0}
+led_init = {'1': 0, '2': 0, '3': 0}
 
 
 # =======================
@@ -71,20 +71,20 @@ def html_page():
 <body>
   <div class="led-control">
     <label>LED1</label>
-    <input type="range" id="led1" min="0" max="100" value="{led_values['1']}" oninput="updateLED(1, this.value)">
-    <span id="val1">{led_values['1']}</span>
+    <input type="range" id="led1" min="0" max="100" value="{led_init['1']}" oninput="updateLED(1, this.value)">
+    <span id="val1">{led_init['1']}</span>
   </div>
 
   <div class="led-control">
     <label>LED2</label>
-    <input type="range" id="led2" min="0" max="100" value="{led_values['2']}" oninput="updateLED(2, this.value)">
-    <span id="val2">{led_values['2']}</span>
+    <input type="range" id="led2" min="0" max="100" value="{led_init['2']}" oninput="updateLED(2, this.value)">
+    <span id="val2">{led_init['2']}</span>
   </div>
 
   <div class="led-control">
     <label>LED3</label>
-    <input type="range" id="led3" min="0" max="100" value="{led_values['3']}" oninput="updateLED(3, this.value)">
-    <span id="val3">{led_values['3']}</span>
+    <input type="range" id="led3" min="0" max="100" value="{led_init['3']}" oninput="updateLED(3, this.value)">
+    <span id="val3">{led_init['3']}</span>
   </div>
 
   <script>
@@ -107,7 +107,7 @@ def html_page():
 # REQUEST HANDLER
 # =======================
 def handle_request(request):
-    global led_values
+    global led_init
 
     if request.startswith("POST"):
         try:
@@ -115,9 +115,9 @@ def handle_request(request):
             if 'led' in data and 'brightness' in data:
                 led = data['led']
                 brightness = int(data['brightness'])
-                led_values[led] = brightness
-                pwm_channels[led].ChangeDutyCycle(brightness)
-                print(f"LED {led} set to {brightness}%")
+                led_init[led] = brightness
+                pwm_pins[led].ChangeDutyCycle(brightness)
+                # print(f"LED {led} set to {brightness}%")
         except Exception as e:
             print("POST error:", e)
 
@@ -138,7 +138,7 @@ def handle_request(request):
 # =======================
 def run_server(host='', port=8080):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((host, port))
         s.listen(1)
         print(f"LED control server running on http://{host or 'localhost'}:{port}/")
@@ -156,10 +156,10 @@ def run_server(host='', port=8080):
         except KeyboardInterrupt:
             print("\nStopping server...")
         finally:
-            for pwm in pwm_channels.values():
+            for pwm in pwm_pins.values():
                 pwm.stop()
             GPIO.cleanup()
-            print("GPIO cleaned up. Goodbye!")
+            # print("GPIO cleaned up. Goodbye!")
 
 
 if __name__ == "__main__":
