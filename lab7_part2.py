@@ -4,17 +4,18 @@ import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM)
 
 # initialize GPIO pin numbers, initial values, and pwm frequency
-led_pins = {'1': 14, '2': 15, '3': 18}
-led_init = {'1': 0, '2': 0, '3': 0}
+led_pins = [14, 15, 18]
+led_init = [0, 0, 0]
+led_pwm =[]
 freq = 1000
 
 # sets up PWM for each LED
 pwm_pins = {}
-for led, pin in led_pins.items():
-    GPIO.setup(pin, GPIO.OUT)
-    pwm = GPIO.PWM(pin, freq)
+for k in led_pins.items():
+    GPIO.setup(k, GPIO.OUT)
+    pwm = GPIO.PWM(k, freq)
     pwm.start(0)
-    pwm_pins[led] = pwm
+    led_pwm.append(pwm)
 
 
 # parses POST data from the HTTP request
@@ -31,7 +32,7 @@ def parsePOSTdata(data):
 
 
 # generates the web interface HTML page
-def html_page():
+def html_java():
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -93,46 +94,44 @@ def html_page():
 </html>"""
 
 
-# single main function
-def main(host='', port=8080):
-    global led_init
+host = ''
+port = 8080
 
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind((host, port))
-        s.listen(1)
-        print(f"Server running — visit http://<your_ip>:{port}/")
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind((host, port))
+s.listen(1)
+print(f"Type http://<IP Address>:{port}/")
 
-        try:
-            while True:
-                conn, addr = s.accept()
-                with conn:
-                    request = conn.recv(1024).decode('utf-8')
-                    if not request:
-                        continue
+try:
+    while True:
+        conn, addr = s.accept()
+        request = conn.recv(1024).decode('utf-8')
+        if not request:
+            continue
 
-                    # --- inline handle_request logic ---
-                    if request.startswith("POST"):
-                        try:
-                            data = parsePOSTdata(request)
-                            if 'led' in data and 'brightness' in data:
-                                led = data['led']
-                                brightness = int(data['brightness'])
-                                led_init[led] = brightness
-                                pwm_pins[led].ChangeDutyCycle(brightness)
-                        except Exception as e:
-                            print("POST error:", e)
+        # --- inline handle_request logic ---
+        if request.startswith("POST"):
+            try:
+                data = parsePOSTdata(request)
+                if 'led' in data and 'brightness' in data:
+                    led = data['led']
+                    brightness = int(data['brightness'])
+                    led_init[led] = brightness
+                    pwm_pins[led].ChangeDutyCycle(brightness)
+            except Exception as e:
+                print("POST error:", e)
 
-                    # prepare and send HTTP response
-                    response = html_page()
-                    conn.sendall(response.encode('utf-8'))
-                    conn.close()
-                    
-        except KeyboardInterrupt:
-            print("\nEnding.")
-        finally:
-            for pwm in pwm_pins.values():
-                pwm.stop()
-            GPIO.cleanup()
+        # prepare and send HTTP response
+        response = html_page()
+        conn.sendall(response.encode('utf-8'))
+        conn.close()
+            
+except KeyboardInterrupt:
+    print("\nEnding.")
+finally:
+    for pwm in led_pwm.values():
+        pwm.stop()
+    GPIO.cleanup()
 
 
 if __name__ == "__main__":
