@@ -8,6 +8,7 @@ led_pins = {'1': 14, '2': 15, '3': 18}
 led_init = {'1': 0, '2': 0, '3': 0}
 freq = 1000
 
+#sets up PWM for each LED
 pwm_pins = {}
 for led, pin in led_pins.items():
     GPIO.setup(pin, GPIO.OUT)
@@ -93,8 +94,10 @@ def html_page():
 def handle_request(request):
     global led_init
 
+    # only follows through if given request is a POST request
     if request.startswith("POST"):
         try:
+            # takes the data and assigns it to variable 'data' then updates the brightness value in 'led_init' 
             data = parsePOSTdata(request)  # <-- use custom parser instead of parse_qs
             if 'led' in data and 'brightness' in data:
                 led = data['led']
@@ -104,7 +107,7 @@ def handle_request(request):
         except Exception as e:
             print("POST error:", e)
 
-    # Return updated page
+    # sends the HTTP response 
     response_body = html_page()
     response = (
         "HTTP/1.1 200 OK\r\n"
