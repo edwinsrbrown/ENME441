@@ -30,8 +30,8 @@ def parsePOSTdata(data):
     return data_dict
 
 
-# generates the HTML web interface
-def html():
+# generates the HTML/Java web interface
+def html_java():
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -122,7 +122,7 @@ try:
                     print("POST error:", e)
 
             # send HTTP response (needed LLM assistance with this)
-            response_body = html()
+            response_body = html_java()
             response = (
                 "HTTP/1.1 200 OK\r\n"
                 "Content-Type: text/html\r\n"
