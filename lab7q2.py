@@ -9,12 +9,12 @@ led_pins = {'1': 14, '2': 15, '3': 18}
 led_init = {'1': 0, '2': 0, '3': 0}
 
 # create pwm for all pins
-pwm_channels = {}
+pwm_values = {}
 for led, pin in led_pins.items():
     GPIO.setup(pin, GPIO.OUT)
     pwm = GPIO.PWM(pin, freq)
     pwm.start(0)
-    pwm_channels[led] = pwm
+    pwm_values[led] = pwm
 
 # given from slides
 def parsePOSTdata(data):
@@ -85,12 +85,12 @@ def html_page():
         }},
         body: 'led=' + led + '&brightness=' + brightness
       }});
-    }}
+    
   </script>
 </body>
 </html>"""
 
-def handle_request(request):
+def brightness_change(request):
     global led_init
 
     if request.startswith("POST"):
@@ -100,8 +100,8 @@ def handle_request(request):
                 led = data['led']
                 brightness = int(data['brightness'])
                 led_init[led] = brightness
-                pwm_channels[led].ChangeDutyCycle(brightness)
-                print(f"LED {led} set to {brightness}%")
+                pwm_values[led].ChangeDutyCycle(brightness)
+                # print(f"LED {led} set to {brightness}%")
         except Exception as e:
             print("POST error:", e)
 
@@ -118,10 +118,9 @@ def handle_request(request):
 
 def run(host = '', port = 8080):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        # s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((host, port))
         s.listen(1)
-        print(f"Type http://raspberrypi.local:8080")
+        print(f"Type http://IP Address:8080")
 
         try:
             while True:
@@ -130,16 +129,14 @@ def run(host = '', port = 8080):
                     request = conn.recv(1024).decode('utf-8')
                     if not request:
                         continue
-                    response = handle_request(request)
+                    response = brightness_change(request)
                     conn.sendall(response.encode('utf-8'))
         except KeyboardInterrupt:
-            print("\nStopping server...")
+            print("Ending.")
         finally:
-            for pwm in pwm_channels.values():
+            for pwm in pwm_values.values():
                 pwm.stop()
             GPIO.cleanup()
-            print("GPIO cleaned up. Goodbye!")
-
 
 if __name__ == "__main__":
     run()
