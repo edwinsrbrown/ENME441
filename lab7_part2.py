@@ -1,34 +1,46 @@
 import socket
 import RPi.GPIO as GPIO
 
+# =======================
+# GPIO SETUP
+# =======================
 GPIO.setmode(GPIO.BCM)
 
-# initialize pwm frequency, GPIO pin locations, and initial values
-freq = 1000  # Hz
-led_pins = {'1': 14, '2': 15, '3': 18}
-led_init = {'1': 0, '2': 0, '3': 0}
+LED_PINS = {'1': 14, '2': 15, '3': 18}
+PWM_FREQUENCY = 1000  # Hz
 
-# create pwm for all pins
 pwm_channels = {}
-for led, pin in led_pins.items():
+for led, pin in LED_PINS.items():
     GPIO.setup(pin, GPIO.OUT)
-    pwm = GPIO.PWM(pin, freq)
+    pwm = GPIO.PWM(pin, PWM_FREQUENCY)
     pwm.start(0)
     pwm_channels[led] = pwm
 
-# given from slides
+led_values = {'1': 0, '2': 0, '3': 0}
+
+
+# =======================
+# Helper function for POST parsing
+# =======================
 def parsePOSTdata(data):
+    """
+    Custom helper function to extract key=value pairs from POST request body.
+    Looks for the start of POST data after headers and splits the pairs manually.
+    """
     data_dict = {}
-    idx = data.find('\r\n\r\n') + 4 
-    data = data[idx:]                
-    data_pairs = data.split('&')    
+    idx = data.find('\r\n\r\n') + 4  # find start of POST body
+    data = data[idx:]                # extract only the body
+    data_pairs = data.split('&')     # split into key=value pairs
     for pair in data_pairs:
         key_val = pair.split('=')
         if len(key_val) == 2:
             data_dict[key_val[0]] = key_val[1]
     return data_dict
 
-# LLM generated HTML and Java code
+
+# =======================
+# HTML + JAVASCRIPT PAGE
+# =======================
 def html_page():
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -59,20 +71,20 @@ def html_page():
 <body>
   <div class="led-control">
     <label>LED1</label>
-    <input type="range" id="led1" min="0" max="100" value="{led_init['1']}" oninput="updateLED(1, this.value)">
-    <span id="val1">{led_init['1']}</span>
+    <input type="range" id="led1" min="0" max="100" value="{led_values['1']}" oninput="updateLED(1, this.value)">
+    <span id="val1">{led_values['1']}</span>
   </div>
 
   <div class="led-control">
     <label>LED2</label>
-    <input type="range" id="led2" min="0" max="100" value="{led_init['2']}" oninput="updateLED(2, this.value)">
-    <span id="val2">{led_init['2']}</span>
+    <input type="range" id="led2" min="0" max="100" value="{led_values['2']}" oninput="updateLED(2, this.value)">
+    <span id="val2">{led_values['2']}</span>
   </div>
 
   <div class="led-control">
     <label>LED3</label>
-    <input type="range" id="led3" min="0" max="100" value="{led_init['3']}" oninput="updateLED(3, this.value)">
-    <span id="val3">{led_init['3']}</span>
+    <input type="range" id="led3" min="0" max="100" value="{led_values['3']}" oninput="updateLED(3, this.value)">
+    <span id="val3">{led_values['3']}</span>
   </div>
 
   <script>
@@ -92,52 +104,63 @@ def html_page():
 
 
 # =======================
+# REQUEST HANDLER
+# =======================
+def handle_request(request):
+    global led_values
+
+    if request.startswith("POST"):
+        try:
+            data = parsePOSTdata(request)  # <-- use custom parser instead of parse_qs
+            if 'led' in data and 'brightness' in data:
+                led = data['led']
+                brightness = int(data['brightness'])
+                led_values[led] = brightness
+                pwm_channels[led].ChangeDutyCycle(brightness)
+                print(f"LED {led} set to {brightness}%")
+        except Exception as e:
+            print("POST error:", e)
+
+    # Return updated page
+    response_body = html_page()
+    response = (
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/html\r\n"
+        f"Content-Length: {len(response_body)}\r\n"
+        "\r\n" +
+        response_body
+    )
+    return response
+
+
+# =======================
 # MAIN SERVER LOOP
 # =======================
-#function to create host server at Pi ip address -> Lec 7, slide 7
-def run(host="", port=8080): #port 8080 -> non privilaged alternative to 80
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #create a socket
-    s.bind((host, port)) #host IP address through the given PORT
-    s.listen(1) # Listen for up to 1 queued connections
-    #Print my Pi's IP address and link to control LEDs
-    print("Visit http://172.20.10.2:8080 in your browser.")
+def run_server(host='', port=8080):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind((host, port))
+        s.listen(1)
+        print(f"LED control server running on http://{host or 'localhost'}:{port}/")
+        print("Press Ctrl+C to stop.")
 
-    while True:
-        conn, addr = s.accept() # Accept connection
-        with conn:
-            data = conn.recv(2048).decode("utf-8") # Receive up to 1024 bytes from client
-            if not data:
-                continue
-
-            #Collect and parse through data
-            if data.startswith("POST"):
-                params = parsePOSTdata(data)
-                led = params.get("led", "1")
-                brightness = params.get("brightness", "0")
-
-                try:
-                    #Change duty cycle based on percantage value from slider
-                    brightness = int(brightness)
-                    brightness = max(0, min(100, brightness))
-                    led_init[led] = brightness
-                    pwm_channels[led].ChangeDutyCycle(brightness)
-                    print(f"LED {led} set to {brightness}% brightness")
-                except Exception as e:
-                    print("POST parse error:", e)
-
-                # Respond minimally to JS (no page reload)
-                conn.sendall(b"HTTP/1.1 204 No Content\r\n\r\n")
-
-            else:  # send updated HTML page
-                body - html_page()
-                headers = (
-                    "HTTP/1.1 200 OK\r\n"
-                    "Content-Type: text/html\r\n"
-                    f"Content-Length: {len(body)}\r\n"
-                    "Connection: close\r\n"
-                    "\r\n"
-                )
+        try:
+            while True:
+                conn, addr = s.accept()
+                with conn:
+                    request = conn.recv(1024).decode('utf-8')
+                    if not request:
+                        continue
+                    response = handle_request(request)
+                    conn.sendall(response.encode('utf-8'))
+        except KeyboardInterrupt:
+            print("\nStopping server...")
+        finally:
+            for pwm in pwm_channels.values():
+                pwm.stop()
+            GPIO.cleanup()
+            print("GPIO cleaned up. Goodbye!")
 
 
 if __name__ == "__main__":
-    run()
+    run_server()
