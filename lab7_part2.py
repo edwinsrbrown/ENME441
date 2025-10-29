@@ -90,59 +90,47 @@ def html_page():
 </body>
 </html>"""
 
-def handle_request(request):
-    global led_init
-
-    if request.startswith("POST"):
-        try:
-            data = parsePOSTdata(request)  
-            if 'led' in data and 'brightness' in data:
-                led = data['led']
-                brightness = int(data['brightness'])
-                led_init[led] = brightness
-                pwm_channels[led].ChangeDutyCycle(brightness)
-                print(f"LED {led} set to {brightness}%")
-        except Exception as e:
-            print("POST error:", e)
-
-    # Return updated page
-    response_body = html_page()
-    response = (
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/html\r\n"
-        f"Content-Length: {len(response_body)}\r\n"
-        "\r\n" +
-        response_body
-    )
-    return response
-
 
 # =======================
 # MAIN SERVER LOOP
 # =======================
-def run(host = '', port = 8080):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.bind((host, port))
-        s.listen(1)
-        print(f"Type http://raspberrypi.local:8080")
+#function to create host server at Pi ip address -> Lec 7, slide 7
+def run_server(host="", port=8080): #port 8080 -> non privilaged alternative to 80
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #create a socket
+    s.bind((host, port)) #host IP address through the given PORT
+    s.listen(1) # Listen for up to 1 queued connections
+    #Print my Pi's IP address and link to control LEDs
+    print("Visit http://172.20.10.8:8080 in your browser.")
 
-        try:
-            while True:
-                conn, addr = s.accept()
-                with conn:
-                    request = conn.recv(1024).decode('utf-8')
-                    if not request:
-                        continue
-                    response = handle_request(request)
-                    conn.sendall(response.encode('utf-8'))
-        except KeyboardInterrupt:
-            print("\nStopping server...")
-        finally:
-            for pwm in pwm_channels.values():
-                pwm.stop()
-            GPIO.cleanup()
-            print("GPIO cleaned up. Goodbye!")
+    while True:
+        conn, addr = s.accept() # Accept connection
+        with conn:
+            data = conn.recv(2048).decode("utf-8") # Receive up to 1024 bytes from client
+            if not data:
+                continue
+
+            #Collect and parse through data
+            if data.startswith("POST"):
+                params = parsePOSTdata(data)
+                led = params.get("led", "1")
+                brightness = params.get("brightness", "0")
+
+                try:
+                    #Change duty cycle based on percantage value from slider
+                    brightness = int(brightness)
+                    brightness = max(0, min(100, brightness))
+                    led_values[led] = brightness
+                    pwm_leds[led].ChangeDutyCycle(brightness)
+                    print(f"LED {led} set to {brightness}% brightness")
+                except Exception as e:
+                    print("POST parse error:", e)
+
+                # Respond minimally to JS (no page reload)
+                conn.sendall(b"HTTP/1.1 204 No Content\r\n\r\n")
+
+            else:  # send updated HTML page
+                response = html_page()
+                conn.sendall(response.encode("utf-8"))
 
 
 if __name__ == "__main__":
