@@ -116,13 +116,9 @@ def handle_request(request):
     )
     return response
 
-
-# =======================
-# MAIN SERVER LOOP
-# =======================
 def run(host = '', port = 8080):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((host, port))
         s.listen(1)
         print(f"Type http://raspberrypi.local:8080")
