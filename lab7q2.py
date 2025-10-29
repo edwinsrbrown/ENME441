@@ -20,7 +20,7 @@ for led, pin in led_pins.items():
 # parses POST data from the HTTP request
 def parsePOSTdata(data):
     data_dict = {}
-    idx = data.find('\r\n\r\n') + 4  
+    idx = data.find('\r\n\r\n')+4  
     data = data[idx:]                
     data_pairs = data.split('&')     
     for pair in data_pairs:
@@ -92,8 +92,6 @@ def html_page():
 </body>
 </html>"""
 
-
-# single main function
 def main(host='', port=8080):
     global led_init
 
@@ -122,7 +120,7 @@ def main(host='', port=8080):
                         except Exception as e:
                             print("POST error:", e)
 
-                    # prepare and send HTTP response
+                    # prepare and send HTTP response (needed LLM assistance for this)
                     response_body = html_page()
                     response = (
                         "HTTP/1.1 200 OK\r\n"
