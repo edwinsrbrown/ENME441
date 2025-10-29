@@ -8,7 +8,7 @@ led_pins = {'1': 14, '2': 15, '3': 18}
 led_init = {'1': 0, '2': 0, '3': 0}
 freq = 1000
 
-#sets up PWM for each LED
+# sets up PWM for each LED
 pwm_pins = {}
 for led, pin in led_pins.items():
     GPIO.setup(pin, GPIO.OUT)
@@ -16,10 +16,11 @@ for led, pin in led_pins.items():
     pwm.start(0)
     pwm_pins[led] = pwm
 
-# given from slides
+
+# parses POST data from the HTTP request
 def parsePOSTdata(data):
     data_dict = {}
-    idx = data.find('\r\n\r\n')+4  
+    idx = data.find('\r\n\r\n') + 4  
     data = data[idx:]                
     data_pairs = data.split('&')     
     for pair in data_pairs:
@@ -28,7 +29,8 @@ def parsePOSTdata(data):
             data_dict[key_val[0]] = key_val[1]
     return data_dict
 
-# LLM generated HTML and Java code
+
+# generates the web interface HTML page
 def html_page():
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -90,39 +92,15 @@ def html_page():
 </body>
 </html>"""
 
-# defining a function for parsing the message (example code also shown in slides)
-def handle_request(request):
+
+# single main function
+def main(host='', port=8080):
     global led_init
 
-    # only follows through if given request is a POST request
-    if request.startswith("POST"):
-        try:
-            # takes the data and assigns it to variable 'data'
-            data = parsePOSTdata(request)  
-            if 'led' in data and 'brightness' in data:
-                led = data['led']
-                brightness = int(data['brightness'])
-                led_init[led] = brightness
-                pwm_pins[led].ChangeDutyCycle(brightness)
-        except Exception as e:
-            print("POST error:", e)
-
-    # sends the HTTP response 
-    response_body = html_page()
-    response = (
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/html\r\n"
-        f"Content-Length: {len(response_body)}\r\n"
-        "\r\n" +
-        response_body
-    )
-    return response
-
-def run(host='', port=8080):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((host, port))
         s.listen(1)
-        print(f"Type http://IP Address:8080/")
+        print(f"Server running — visit http://<your_ip>:{port}/")
 
         try:
             while True:
@@ -131,16 +109,31 @@ def run(host='', port=8080):
                     request = conn.recv(1024).decode('utf-8')
                     if not request:
                         continue
-                    response = handle_request(request)
+
+                    # --- inline handle_request logic ---
+                    if request.startswith("POST"):
+                        try:
+                            data = parsePOSTdata(request)
+                            if 'led' in data and 'brightness' in data:
+                                led = data['led']
+                                brightness = int(data['brightness'])
+                                led_init[led] = brightness
+                                pwm_pins[led].ChangeDutyCycle(brightness)
+                        except Exception as e:
+                            print("POST error:", e)
+
+                    # prepare and send HTTP response
+                    response_body = html_page()
                     conn.sendall(response.encode('utf-8'))
+                    conn.close()
+                    
         except KeyboardInterrupt:
-            print("Ending.")
+            print("\nEnding.")
         finally:
             for pwm in pwm_pins.values():
                 pwm.stop()
             GPIO.cleanup()
-            
 
 
 if __name__ == "__main__":
-    run()
+    main()
