@@ -110,6 +110,7 @@ try:
             response = (
                 "HTTP/1.1 200 OK\r\n"
                 "Content-Type: text/html\r\n"
+                "Connection: close\r\n"
                 f"Content-Length: {len(response_body)}\r\n"
                 "\r\n" +
                 response_body
