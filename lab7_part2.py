@@ -17,7 +17,7 @@ for led, pin in led_pins.items():
     pwm_pins[led] = pwm
 
 
-# parses POST data from the HTTP request
+# given in slides
 def parsePOSTdata(data):
     data_dict = {}
     idx = data.find('\r\n\r\n')+4  
@@ -30,8 +30,8 @@ def parsePOSTdata(data):
     return data_dict
 
 
-# generates the web interface HTML page
-def html_page():
+# generates the HTML web interface
+def html():
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -99,7 +99,7 @@ PORT = 8080
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((HOST, PORT))
 s.listen(1)
-print(f"Server running — visit http://<your_ip>:{PORT}/")
+print("Type http://<IP Address>:8080")
 
 try:
     while True:
@@ -121,8 +121,8 @@ try:
                 except Exception as e:
                     print("POST error:", e)
 
-            # send HTTP response
-            response_body = html_page()
+            # send HTTP response (needed LLM assistance with this)
+            response_body = html()
             response = (
                 "HTTP/1.1 200 OK\r\n"
                 "Content-Type: text/html\r\n"
