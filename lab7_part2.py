@@ -97,7 +97,7 @@ def handle_request(request):
     # only follows through if given request is a POST request
     if request.startswith("POST"):
         try:
-            # takes the data and assigns it to variable 'data' then updates the brightness value in 'led_init' 
+            # takes the data and assigns it to variable 'data'
             data = parsePOSTdata(request)  
             if 'led' in data and 'brightness' in data:
                 led = data['led']
@@ -118,11 +118,11 @@ def handle_request(request):
     )
     return response
 
-def run_server(host='', port=8080):
+def run(host='', port=8080):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((host, port))
         s.listen(1)
-        print(f"Type http://IP Address:{port}/")
+        print(f"Type http://IP Address:8080/")
 
         try:
             while True:
@@ -143,4 +143,4 @@ def run_server(host='', port=8080):
 
 
 if __name__ == "__main__":
-    run_server()
+    run()
