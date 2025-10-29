@@ -119,8 +119,8 @@ def run(host="", port=8080): #port 8080 -> non privilaged alternative to 80
                     #Change duty cycle based on percantage value from slider
                     brightness = int(brightness)
                     brightness = max(0, min(100, brightness))
-                    led_values[led] = brightness
-                    pwm_leds[led].ChangeDutyCycle(brightness)
+                    led_init[led] = brightness
+                    pwm_channels[led].ChangeDutyCycle(brightness)
                     print(f"LED {led} set to {brightness}% brightness")
                 except Exception as e:
                     print("POST parse error:", e)
