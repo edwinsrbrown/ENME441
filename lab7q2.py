@@ -100,8 +100,7 @@ def brightness_change(request):
 
     if request.startswith("POST"):
         try:
-            body = request.split("\r\n\r\n", 1)[1]
-            data = parse_qs(body)
+            data = parsePOSTdata(request)
             if 'led' in data and 'brightness' in data:
                 led = data['led'][0]
                 brightness = int(data['brightness'][0])
