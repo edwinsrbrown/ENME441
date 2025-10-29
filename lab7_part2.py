@@ -1,13 +1,12 @@
 import socket
 import RPi.GPIO as GPIO
 
-# =======================
-# GPIO SETUP
-# =======================
 GPIO.setmode(GPIO.BCM)
 
+# initialize GPIO pin numbers, initial values, and pwm frequency
 led_pins = {'1': 14, '2': 15, '3': 18}
-freq = 1000  # Hz
+led_init = {'1': 0, '2': 0, '3': 0}
+freq = 1000
 
 pwm_pins = {}
 for led, pin in led_pins.items():
@@ -16,31 +15,19 @@ for led, pin in led_pins.items():
     pwm.start(0)
     pwm_pins[led] = pwm
 
-led_init = {'1': 0, '2': 0, '3': 0}
-
-
-# =======================
-# Helper function for POST parsing
-# =======================
+# given from slides
 def parsePOSTdata(data):
-    """
-    Custom helper function to extract key=value pairs from POST request body.
-    Looks for the start of POST data after headers and splits the pairs manually.
-    """
     data_dict = {}
-    idx = data.find('\r\n\r\n') + 4  # find start of POST body
-    data = data[idx:]                # extract only the body
-    data_pairs = data.split('&')     # split into key=value pairs
+    idx = data.find('\r\n\r\n')+4  
+    data = data[idx:]                
+    data_pairs = data.split('&')     
     for pair in data_pairs:
         key_val = pair.split('=')
         if len(key_val) == 2:
             data_dict[key_val[0]] = key_val[1]
     return data_dict
 
-
-# =======================
-# HTML + JAVASCRIPT PAGE
-# =======================
+# LLM generated HTML and Java code
 def html_page():
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -102,10 +89,7 @@ def html_page():
 </body>
 </html>"""
 
-
-# =======================
-# REQUEST HANDLER
-# =======================
+# defining a function for parsing the message (example code also shown in slides)
 def handle_request(request):
     global led_init
 
@@ -117,7 +101,6 @@ def handle_request(request):
                 brightness = int(data['brightness'])
                 led_init[led] = brightness
                 pwm_pins[led].ChangeDutyCycle(brightness)
-                # print(f"LED {led} set to {brightness}%")
         except Exception as e:
             print("POST error:", e)
 
@@ -132,17 +115,12 @@ def handle_request(request):
     )
     return response
 
-
-# =======================
-# MAIN SERVER LOOP
-# =======================
 def run_server(host='', port=8080):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         # s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((host, port))
         s.listen(1)
-        print(f"LED control server running on http://{host or 'localhost'}:{port}/")
-        print("Press Ctrl+C to stop.")
+        print(f"Type http://IP Address:{port}/")
 
         try:
             while True:
@@ -154,12 +132,12 @@ def run_server(host='', port=8080):
                     response = handle_request(request)
                     conn.sendall(response.encode('utf-8'))
         except KeyboardInterrupt:
-            print("\nStopping server...")
+            print("Ending.")
         finally:
             for pwm in pwm_pins.values():
                 pwm.stop()
             GPIO.cleanup()
-            # print("GPIO cleaned up. Goodbye!")
+            
 
 
 if __name__ == "__main__":
