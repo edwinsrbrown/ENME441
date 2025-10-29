@@ -11,7 +11,7 @@ freq = 1000
 
 # sets up PWM for each LED
 pwm_pins = {}
-for k in led_pins.items():
+for k in led_pins:
     GPIO.setup(k, GPIO.OUT)
     pwm = GPIO.PWM(k, freq)
     pwm.start(0)
