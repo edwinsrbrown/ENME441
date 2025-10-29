@@ -94,11 +94,11 @@ def html_java():
 </html>"""
 
 
-host = ''
-port = 8080
+HOST = ''
+PORT = 8080
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind((host, port))
+s.bind((HOST, PORT))
 s.listen(1)
 print(f"Type http://<IP Address>:{port}/")
 
@@ -111,15 +111,18 @@ try:
 
         # --- inline handle_request logic ---
         if request.startswith("POST"):
+            data = parsePOSTdata(request)
+            
             try:
-                data = parsePOSTdata(request)
+                led = int(data.get("led", 0))
+                brightness = int(data.get("brightness", 0))
+                
                 if 'led' in data and 'brightness' in data:
-                    led = data['led']
-                    brightness = int(data['brightness'])
                     led_init[led] = brightness
                     pwm_pins[led].ChangeDutyCycle(brightness)
+            
             except Exception as e:
-                print("POST error:", e)
+                print("POST err:", e)
 
         # prepare and send HTTP response
         response = html_page()
@@ -129,7 +132,7 @@ try:
 except KeyboardInterrupt:
     print("\nEnding.")
 finally:
-    for pwm in led_pwm.values():
+    for pwm in led_pwm:
         pwm.stop()
     GPIO.cleanup()
 
