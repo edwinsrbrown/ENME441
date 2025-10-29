@@ -1,46 +1,34 @@
 import socket
 import RPi.GPIO as GPIO
 
-# =======================
-# GPIO SETUP
-# =======================
 GPIO.setmode(GPIO.BCM)
 
-led_pins = {'1': 17, '2': 27, '3': 22}
-pwm_freq = 1000  # Hz
+# initialize pwm frequency, GPIO pin locations, and initial values
+freq = 1000  # Hz
+led_pins = {'1': 14, '2': 15, '3': 18}
+led_init = {'1': 0, '2': 0, '3': 0}
 
+# create pwm for all pins
 pwm_channels = {}
 for led, pin in led_pins.items():
     GPIO.setup(pin, GPIO.OUT)
-    pwm = GPIO.PWM(pin, pwm_freq)
+    pwm = GPIO.PWM(pin, freq)
     pwm.start(0)
     pwm_channels[led] = pwm
 
-led_init = {'1': 0, '2': 0, '3': 0}
-
-
-# =======================
-# Helper function for POST parsing
-# =======================
+# given from slides
 def parsePOSTdata(data):
-    """
-    Custom helper function to extract key=value pairs from POST request body.
-    Looks for the start of POST data after headers and splits the pairs manually.
-    """
     data_dict = {}
-    idx = data.find('\r\n\r\n') + 4  # find start of POST body
-    data = data[idx:]                # extract only the body
-    data_pairs = data.split('&')     # split into key=value pairs
+    idx = data.find('\r\n\r\n') + 4 
+    data = data[idx:]                
+    data_pairs = data.split('&')    
     for pair in data_pairs:
         key_val = pair.split('=')
         if len(key_val) == 2:
             data_dict[key_val[0]] = key_val[1]
     return data_dict
 
-
-# =======================
-# HTML + JAVASCRIPT PAGE
-# =======================
+# LLM generated HTML and Java code
 def html_page():
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -102,16 +90,12 @@ def html_page():
 </body>
 </html>"""
 
-
-# =======================
-# REQUEST HANDLER
-# =======================
 def handle_request(request):
     global led_init
 
     if request.startswith("POST"):
         try:
-            data = parsePOSTdata(request)  # <-- use custom parser instead of parse_qs
+            data = parsePOSTdata(request)  
             if 'led' in data and 'brightness' in data:
                 led = data['led']
                 brightness = int(data['brightness'])
@@ -136,13 +120,12 @@ def handle_request(request):
 # =======================
 # MAIN SERVER LOOP
 # =======================
-def run_server(host='', port=8080):
+def run(host = '', port = 8080):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((host, port))
         s.listen(1)
-        print(f"LED control server running on http://{host or 'localhost'}:{port}/")
-        print("Press Ctrl+C to stop.")
+        print(f"Type http://raspberrypi.local:8080")
 
         try:
             while True:
@@ -163,4 +146,4 @@ def run_server(host='', port=8080):
 
 
 if __name__ == "__main__":
-    run_server()
+    run()
