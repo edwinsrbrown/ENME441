@@ -16,7 +16,7 @@ PWM_FREQUENCY = 1000  # Hz
 pwm_channels = {}
 for led, pin in LED_PINS.items():
 	GPIO.setup(pin, GPIO.OUT)
-    pwm = GPIO.PWM(pin, PWM_FREQUENCY)
+	pwm = GPIO.PWM(pin, PWM_FREQUENCY)
     pwm.start(0)
     pwm_channels[led] = pwm
 
