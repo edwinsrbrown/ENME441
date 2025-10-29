@@ -95,7 +95,7 @@ def html_page():
 # MAIN SERVER LOOP
 # =======================
 #function to create host server at Pi ip address -> Lec 7, slide 7
-def run_server(host="", port=8080): #port 8080 -> non privilaged alternative to 80
+def run(host="", port=8080): #port 8080 -> non privilaged alternative to 80
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #create a socket
     s.bind((host, port)) #host IP address through the given PORT
     s.listen(1) # Listen for up to 1 queued connections
