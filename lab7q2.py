@@ -3,32 +3,34 @@ import RPi.GPIO as GPIO
 
 GPIO.setmode(GPIO.BCM)
 
-# initialize pwm frequency, GPIO pin locations, and initial values
-freq = 1000  # Hz
+# initialize GPIO pin numbers, initial values, and pwm frequency
 led_pins = {'1': 14, '2': 15, '3': 18}
 led_init = {'1': 0, '2': 0, '3': 0}
+freq = 1000
 
-# create pwm for all pins
-pwm_values = {}
+# sets up PWM for each LED
+pwm_pins = {}
 for led, pin in led_pins.items():
     GPIO.setup(pin, GPIO.OUT)
     pwm = GPIO.PWM(pin, freq)
     pwm.start(0)
-    pwm_values[led] = pwm
+    pwm_pins[led] = pwm
 
-# given from slides
+
+# parses POST data from the HTTP request
 def parsePOSTdata(data):
     data_dict = {}
-    idx = data.find('\r\n\r\n') + 4 
+    idx = data.find('\r\n\r\n') + 4  
     data = data[idx:]                
-    data_pairs = data.split('&')    
+    data_pairs = data.split('&')     
     for pair in data_pairs:
         key_val = pair.split('=')
         if len(key_val) == 2:
             data_dict[key_val[0]] = key_val[1]
     return data_dict
 
-# LLM generated HTML and Java code
+
+# generates the web interface HTML page
 def html_page():
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -78,7 +80,6 @@ def html_page():
   <script>
     function updateLED(led, brightness) {{
       document.getElementById('val' + led).textContent = brightness;
-
       fetch('/', {{
         method: 'POST',
         headers: {{
@@ -92,40 +93,14 @@ def html_page():
 </html>"""
 
 
-# =======================
-# REQUEST HANDLER
-# =======================
-def brightness_change(request):
+# single main function
+def main(host='', port=8080):
     global led_init
 
-    if request.startswith("POST"):
-        try:
-            data = parsePOSTdata(request)
-            if 'led' in data and 'brightness' in data:
-                led = data['led'][0]
-                brightness = int(data['brightness'][0])
-                led_init[led] = brightness
-                pwm_values[led].ChangeDutyCycle(brightness)
-                print(f"LED {led} set to {brightness}%")
-        except Exception as e:
-            print("POST error:", e)
-
-    # Return updated page
-    response_body = html_page()
-    response = (
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/html\r\n"
-        f"Content-Length: {len(response_body)}\r\n"
-        "\r\n" +
-        response_body
-    )
-    return response
-
-def run(host = '', port = 8080):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((host, port))
         s.listen(1)
-        print(f"Type http://IP Address:8080")
+        print(f"Server running — visit http://<your_ip>:{port}/")
 
         try:
             while True:
@@ -134,14 +109,36 @@ def run(host = '', port = 8080):
                     request = conn.recv(1024).decode('utf-8')
                     if not request:
                         continue
-                    response = brightness_change(request)
+
+                    # --- inline handle_request logic ---
+                    if request.startswith("POST"):
+                        try:
+                            data = parsePOSTdata(request)
+                            if 'led' in data and 'brightness' in data:
+                                led = data['led']
+                                brightness = int(data['brightness'])
+                                led_init[led] = brightness
+                                pwm_pins[led].ChangeDutyCycle(brightness)
+                        except Exception as e:
+                            print("POST error:", e)
+
+                    # prepare and send HTTP response
+                    response_body = html_page()
+                    response = (
+                        "HTTP/1.1 200 OK\r\n"
+                        "Content-Type: text/html\r\n"
+                        f"Content-Length: {len(response_body)}\r\n"
+                        "\r\n" +
+                        response_body
+                    )
                     conn.sendall(response.encode('utf-8'))
         except KeyboardInterrupt:
-            print("Ending.")
+            print("\nEnding.")
         finally:
-            for pwm in pwm_values.values():
+            for pwm in pwm_pins.values():
                 pwm.stop()
             GPIO.cleanup()
 
+
 if __name__ == "__main__":
-    run()
+    main()
