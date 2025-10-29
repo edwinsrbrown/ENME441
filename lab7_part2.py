@@ -123,7 +123,7 @@ def main(host='', port=8080):
                             print("POST error:", e)
 
                     # prepare and send HTTP response
-                    response_body = html_page()
+                    response = html_page()
                     conn.sendall(response.encode('utf-8'))
                     conn.close()
                     
